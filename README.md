@@ -1,2 +1,2 @@
 # dockerfiles
-Dockerfile examples will be collected here
+Dockerfile and Vagrantfile examples will be collected here
