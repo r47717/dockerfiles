@@ -1,0 +1,26 @@
+FROM ubuntu:16.04
+
+RUN apt-get update && apt-get install -y apache2 unzip nodejs npm php7.0 \
+    composer vim libapache2-mod-php7.0 php7.0-pdo php7.0-mysql php7.0-mbstring \
+	php7.0-tokenizer php7.0-xml php7.0-zip
+
+# add virtual hosts config in this file
+ADD apache-config.txt /etc/apache2/sites-enabled/000-default.conf
+
+# change project name here
+RUN cd /var/www/html && composer create-project --prefer-dist laravel/laravel claravel
+
+RUN chmod 777 /var/www/html/claravel/storage/logs
+RUN chmod 777 /var/www/html/claravel/storage/framework/views
+RUN chmod 777 /var/www/html/claravel/storage/framework
+RUN chmod 777 /var/www/html/claravel/storage/framework/sessions
+
+RUN echo "<?php echo phpinfo(); " > /var/www/html/claravel/public/test.php
+
+RUN ln -s /usr/bin/nodejs /usr/bin/node
+RUN npm i -g grunt bower bower-installer
+RUN npm install
+
+EXPOSE 80
+
+CMD /usr/sbin/apache2ctl -D FOREGROUND
