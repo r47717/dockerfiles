@@ -1,0 +1,112 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$script = <<SCRIPT
+echo "Installing dependencies ..."
+sudo apt-get update
+sudo apt-get install -y unzip curl jq
+echo "Determining Consul version to install ..."
+CHECKPOINT_URL="https://checkpoint-api.hashicorp.com/v1/check"
+if [ -z "$CONSUL_DEMO_VERSION" ]; then
+    CONSUL_DEMO_VERSION=$(curl -s "${CHECKPOINT_URL}"/consul | jq .current_version | tr -d '"')
+fi
+echo "Fetching Consul version ${CONSUL_DEMO_VERSION} ..."
+cd /tmp/
+curl -s https://releases.hashicorp.com/consul/${CONSUL_DEMO_VERSION}/consul_${CONSUL_DEMO_VERSION}_linux_amd64.zip -o consul.zip
+echo "Installing Consul version ${CONSUL_DEMO_VERSION} ..."
+unzip consul.zip
+sudo chmod +x consul
+sudo mv consul /usr/bin/consul
+sudo mkdir /etc/consul.d
+sudo chmod a+w /etc/consul.d
+sudo apt install -y apache2 openjdk-7-jdk nodejs
+sudo apt install -y vim php5
+sudo chown vagrant:vagrant /var/www/html
+sudo rm -rf /var/www/html/index.html
+echo "<?php echo phpinfo();" > /var/www/html/test.php
+sudo ln -s /usr/bin/nodejs /usr/bin/node
+mkdir /home/vagrant/download
+cd /home/vagrant/download
+wget http://www-eu.apache.org/dist/kafka/0.11.0.0/kafka_2.11-0.11.0.0.tgz
+tar xvf kafka_2.11-0.11.0.0.tgz
+mv kafka_2.11-0.11.0.0 ../kafka
+sudo chown vagrant:vagrant /home/vagrant/kafka -R
+cd ../kafka
+bin/zookeeper-server-start.sh config/zookeeper.properties &
+bin/kafka-server-start.sh config/server.properties &
+SCRIPT
+
+# Specify a Consul version
+CONSUL_DEMO_VERSION = ENV['CONSUL_DEMO_VERSION']
+
+# Specify a custom Vagrant box for the demo
+DEMO_BOX_NAME = ENV['DEMO_BOX_NAME'] || "ubuntu/trusty64"
+
+# Vagrantfile API/syntax version.
+# NB: Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # TODO: make a loop here
+
+  config.vm.define "n1" do |n1|
+      n1.vm.box = DEMO_BOX_NAME
+      n1.vm.hostname = "n1"
+      n1.vm.network "private_network", ip: "172.20.20.10"
+	    n1.vm.synced_folder ".", "/vagrant", type: "virtualbox", nfs: true
+	    n1.vm.network "forwarded_port", guest: 80, host: 8081
+	    n1.vm.provision "shell", inline: $script, env: {'CONSUL_DEMO_VERSION' => CONSUL_DEMO_VERSION}
+	    n1.vm.provider "virtualbox" do |v|
+        v.memory = 1500
+      end
+  end
+
+  config.vm.define "n2" do |n2|
+      n2.vm.box = DEMO_BOX_NAME
+      n2.vm.hostname = "n2"
+      n2.vm.network "private_network", ip: "172.20.20.11"
+	    n2.vm.synced_folder ".", "/vagrant", type: "virtualbox", nfs: true
+	    n2.vm.network "forwarded_port", guest: 80, host: 8082
+	    n2.vm.provision "shell", inline: $script, env: {'CONSUL_DEMO_VERSION' => CONSUL_DEMO_VERSION}
+	    n2.vm.provider "virtualbox" do |v|
+        v.memory = 1500
+      end
+  end
+
+  config.vm.define "n3" do |n3|
+      n3.vm.box = DEMO_BOX_NAME
+      n3.vm.hostname = "n3"
+      n3.vm.network "private_network", ip: "172.20.20.12"
+	    n3.vm.synced_folder ".", "/vagrant", type: "virtualbox", nfs: true
+ 	    n3.vm.network "forwarded_port", guest: 80, host: 8083
+	    n3.vm.provision "shell", inline: $script, env: {'CONSUL_DEMO_VERSION' => CONSUL_DEMO_VERSION}
+	    n3.vm.provider "virtualbox" do |v|
+        v.memory = 512
+      end
+  end
+
+  config.vm.define "n4" do |n4|
+      n4.vm.box = DEMO_BOX_NAME
+      n4.vm.hostname = "n4"
+      n4.vm.network "private_network", ip: "172.20.20.13"
+	    n4.vm.synced_folder ".", "/vagrant", type: "virtualbox", nfs: true
+ 	    n4.vm.network "forwarded_port", guest: 80, host: 8084
+	    n4.vm.provision "shell", inline: $script, env: {'CONSUL_DEMO_VERSION' => CONSUL_DEMO_VERSION}
+	    n4.vm.provider "virtualbox" do |v|
+        v.memory = 512
+      end
+  end
+
+  config.vm.define "n5" do |n5|
+      n5.vm.box = DEMO_BOX_NAME
+      n5.vm.hostname = "n5"
+      n5.vm.network "private_network", ip: "172.20.20.14"
+	    n5.vm.synced_folder ".", "/vagrant", type: "virtualbox", nfs: true
+ 	    n5.vm.network "forwarded_port", guest: 80, host: 8085
+	    n5.vm.provision "shell", inline: $script, env: {'CONSUL_DEMO_VERSION' => CONSUL_DEMO_VERSION}
+	    n5.vm.provider "virtualbox" do |v|
+        v.memory = 512
+      end
+  end
+end
