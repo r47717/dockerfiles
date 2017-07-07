@@ -1,0 +1,9 @@
+[Unit]
+Description=foo
+
+[Service]
+ExecStart=/bin/bash -c "while true; do /bin/inotifywait -qq --event close_write /sys/class/backlight/acpi_video0/brightness; su myusername -c '/bin/xbacklight -display :0 -set $(cat /sys/class/backlight/acpi_video0/brightness)'; done"
+ExecStop=...
+
+[Install]
+WantedBy=multi-user.target
