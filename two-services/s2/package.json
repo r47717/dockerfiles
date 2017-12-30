@@ -1,0 +1,18 @@
+{
+  "name": "s1",
+  "version": "1.0.0",
+  "description": "s2",
+  "main": "index.js",
+  "author": "r47717",
+  "license": "MIT",
+  "scripts": {
+    "start": "node ./index.js"
+  },
+  "dependencies": {
+    "axios": "^0.17.1",
+    "body-parser": "^1.15.1",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.2"
+  }
+}

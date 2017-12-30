@@ -1,0 +1,12 @@
+version: '2'
+services:
+  s2:
+    build: .
+    expose:
+      - 8002
+    ports:
+      - 8002:8002
+networks:
+  default:
+    external:
+      name: r47717-network
