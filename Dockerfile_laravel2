@@ -1,0 +1,25 @@
+FROM composer AS builder
+
+WORKDIR /var/www/html
+
+COPY . .
+
+RUN composer install --no-dev
+
+FROM php:7.2-apache
+
+WORKDIR /var/www/html
+
+COPY --from=builder /var/www/html /var/www/html
+
+RUN cp ./apache/000-default.conf /etc/apache2/sites-available/ && \
+    a2enmod rewrite && \
+    cp ./.env.example ./.env && \
+    chown -R www-data:www-data ./storage && \
+    apt-get update && \
+    apt-get install -y libpq-dev && \
+    docker-php-ext-install pdo_pgsql
+
+RUN php artisan key:generate
+
+EXPOSE 80
